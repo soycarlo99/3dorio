@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8bbca7fa0e7d6cf45b625c38120c55a4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 29165
+  packageName: Sci-Fi Engineer
+  packageVersion: 1.3
+  assetPath: Assets/Yurowm/Controllers/OnePistolController.controller
+  uploadId: 62373

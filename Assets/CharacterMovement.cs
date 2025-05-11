@@ -212,10 +212,8 @@ public class CharacterMovement : MonoBehaviour
         {
             float movementMagnitude = new Vector2(moveDirection.x, moveDirection.z).magnitude / runSpeed;
             
+            // Only set the Speed parameter which should exist in your animator
             animator.SetFloat("Speed", movementMagnitude);
-            animator.SetBool("IsGrounded", isGrounded);
-            animator.SetBool("IsRunning", movementMagnitude > 0.5f && 
-                            (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed));
         }
     }
 }

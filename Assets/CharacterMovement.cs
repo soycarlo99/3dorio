@@ -12,6 +12,7 @@ public class CharacterMovement : MonoBehaviour
     public float jumpForce = 5.0f;
     public float gravity = 20.0f;
     public float groundCheckDistance = 0.1f;
+    public float mouseSensitivity = 2.0f;
 
     // Component references
     private CharacterController characterController;
@@ -23,6 +24,8 @@ public class CharacterMovement : MonoBehaviour
     private Vector3 moveDirection = Vector3.zero;
     private bool isGrounded;
     private float verticalVelocity = 0f;
+    private float rotationX = 0f;
+    private bool isMovingForward = false;
 
     private void Start()
     {
@@ -42,12 +45,19 @@ public class CharacterMovement : MonoBehaviour
 
         // Reset initial velocity to ensure we start grounded
         verticalVelocity = -0.5f;
+
+        // Lock and hide the cursor
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void Update()
     {
         // Check if character is grounded
         CheckGroundStatus();
+        
+        // Handle mouse rotation
+        HandleMouseRotation();
         
         // Handle movement input
         HandleMovement();
@@ -88,25 +98,25 @@ public class CharacterMovement : MonoBehaviour
         }
     }
 
+    private void HandleMouseRotation()
+    {
+        // Get mouse input
+        float mouseX = Mouse.current.delta.ReadValue().x * mouseSensitivity;
+        float mouseY = Mouse.current.delta.ReadValue().y * mouseSensitivity;
+
+        // Rotate the camera up/down
+        rotationX -= mouseY;
+        rotationX = Mathf.Clamp(rotationX, -90f, 90f);
+        cameraTransform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+
+        // Rotate the character left/right
+        transform.Rotate(Vector3.up * mouseX);
+    }
+
     private void HandleMovement()
     {
-        // Get input values using new Input System
-        Vector2 inputVector = Vector2.zero;
-        
-        // Read keyboard input
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.wKey.isPressed) inputVector.y += 1;
-            if (Keyboard.current.sKey.isPressed) inputVector.y -= 1;
-            if (Keyboard.current.aKey.isPressed) inputVector.x -= 1;
-            if (Keyboard.current.dKey.isPressed) inputVector.x += 1;
-        }
-        
-        // Read gamepad input if available
-        if (Gamepad.current != null)
-        {
-            inputVector += Gamepad.current.leftStick.ReadValue();
-        }
+        // Get forward movement input
+        isMovingForward = Keyboard.current != null && Keyboard.current.wKey.isPressed;
         
         // Check if running (shift key or gamepad button)
         bool isRunning = false;
@@ -117,32 +127,10 @@ public class CharacterMovement : MonoBehaviour
             
         float currentSpeed = isRunning ? runSpeed : moveSpeed;
         
-        // Calculate movement direction relative to camera
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
-        
-        // Keep the vectors parallel to the ground
-        forward.y = 0;
-        right.y = 0;
-        forward.Normalize();
-        right.Normalize();
-        
-        // Create the movement direction vector
-        Vector3 desiredMoveDirection = forward * inputVector.y + right * inputVector.x;
-        
-        // If moving, update move direction and rotate character
-        if (desiredMoveDirection.magnitude > 0.1f)
+        if (isMovingForward)
         {
-            // Normalize for consistent movement speed in all directions
-            desiredMoveDirection.Normalize();
-            
-            // Rotate character to face movement direction
-            Quaternion targetRotation = Quaternion.LookRotation(desiredMoveDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-            
-            // Set movement direction
-            moveDirection.x = desiredMoveDirection.x * currentSpeed;
-            moveDirection.z = desiredMoveDirection.z * currentSpeed;
+            // Move in the direction the character is facing
+            moveDirection = transform.forward * currentSpeed;
         }
         else
         {

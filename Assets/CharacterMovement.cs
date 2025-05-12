@@ -24,8 +24,8 @@ public class CharacterMovement : MonoBehaviour
     private Vector3 moveDirection = Vector3.zero;
     private bool isGrounded;
     private float verticalVelocity = 0f;
-    private float rotationX = 0f;
-    private bool isMovingForward = false;
+    public Transform cameraPivot; // Assign in Inspector
+    private float pitch = 0f;
 
     private void Start()
     {
@@ -100,23 +100,25 @@ public class CharacterMovement : MonoBehaviour
 
     private void HandleMouseRotation()
     {
-        // Get mouse input
         float mouseX = Mouse.current.delta.ReadValue().x * mouseSensitivity;
         float mouseY = Mouse.current.delta.ReadValue().y * mouseSensitivity;
 
-        // Rotate the camera up/down
-        rotationX -= mouseY;
-        rotationX = Mathf.Clamp(rotationX, -90f, 90f);
-        cameraTransform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
-
-        // Rotate the character left/right
+        // Horizontal: rotate the player (yaw)
         transform.Rotate(Vector3.up * mouseX);
+
+        // Vertical: rotate the camera pivot (pitch)
+        if (cameraPivot != null)
+        {
+            pitch -= mouseY;
+            pitch = Mathf.Clamp(pitch, -80f, 80f);
+            cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        }
     }
 
     private void HandleMovement()
     {
         // Get forward movement input
-        isMovingForward = Keyboard.current != null && Keyboard.current.wKey.isPressed;
+        bool isMovingForward = Keyboard.current != null && Keyboard.current.wKey.isPressed;
         
         // Check if running (shift key or gamepad button)
         bool isRunning = false;
